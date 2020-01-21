@@ -1,14 +1,7 @@
 package model
 
-type Article struct {
-	ID      int64
-	Title   string
-	Content string
-	Author  string
-}
-
 type Account struct {
-	UID           string
+	UID           int64
 	Email         string
 	Password      string
 	NickName      string

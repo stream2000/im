@@ -3,6 +3,7 @@ package dao
 import (
 	pb "chat/app/service/account/api"
 	"context"
+	"github.com/bilibili/kratos/pkg/ecode"
 	"github.com/bilibili/kratos/pkg/log"
 	xtime "github.com/bilibili/kratos/pkg/time"
 	"github.com/pkg/errors"
@@ -60,6 +61,17 @@ func (d *dao) RawAccount(ctx context.Context, email string) (acc *model.Account,
 func (d *dao) AddAccount(ctx context.Context, req *pb.RegisterReq) (resp *pb.RegisterResp, err error) {
 	// if the key is cached, the account will get a empty response
 	resp = new(pb.RegisterResp)
+
+	// use transaction to ensure we get a right auto increment id
+	tx, err := d.db.Begin(ctx)
+	defer func() {
+		if nil == err {
+			_ = tx.Commit()
+		} else {
+			_ = tx.Rollback()
+		}
+	}()
+
 	acc, err := d.Account(ctx, req.Email)
 	if err != nil {
 		return
@@ -73,25 +85,28 @@ func (d *dao) AddAccount(ctx context.Context, req *pb.RegisterReq) (resp *pb.Reg
 
 	var data []map[string]interface{}
 	now := xtime.Time(time.Now().Unix())
-	uid := uuid.NewV4().String()
+	uuid := uuid.NewV4().String()
 	data = append(data, map[string]interface{}{
-		"id":              uid,
 		"email":           req.Email,
 		"password":        req.Password,
 		"ctime":           now,
 		"mtime":           now,
-		"nickname":        "user-" + uid,
+		"nickname":        "user-" + uuid,
 		"nickname_mtime":  now,
 		"profile_pic_url": "default",
 	})
-
 	cond, vals, err := qb.BuildInsert(accountTable, data)
 	log.Infoc(ctx, cond, vals)
-	_, err = d.db.Exec(ctx, cond, vals...)
+	res, err := d.db.Exec(ctx, cond, vals...)
 	if err != nil {
 		return
 	}
 
-	resp.Uid = uid
+	lastInsertedId, err := res.LastInsertId()
+	if err != nil {
+		log.Errorc(ctx, "fatal error when get auto increase id of email %s", req.Email)
+		return nil, ecode.Error(ecode.ServerErr, "fatal error when get auto increment id")
+	}
+	resp.Uid = lastInsertedId
 	return
 }

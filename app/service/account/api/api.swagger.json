@@ -167,7 +167,7 @@
             "type": "object",
             "properties": {
                 "uid": {
-                    "type": "string"
+                    "type": "integer"
                 },
                 "password": {
                     "type": "string"
@@ -190,7 +190,7 @@
                     "type": "string"
                 },
                 "uid": {
-                    "type": "string"
+                    "type": "integer"
                 }
             },
             "required": [
@@ -227,7 +227,7 @@
             "type": "object",
             "properties": {
                 "uid": {
-                    "type": "string"
+                    "type": "integer"
                 }
             }
         },
