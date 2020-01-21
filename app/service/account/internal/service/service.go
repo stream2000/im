@@ -6,7 +6,6 @@ import (
 	"context"
 	"github.com/bilibili/kratos/pkg/conf/paladin"
 	"github.com/bilibili/kratos/pkg/ecode"
-
 	"github.com/golang/protobuf/ptypes/empty"
 	"github.com/google/wire"
 )
@@ -20,13 +19,38 @@ type Service struct {
 	dao dao.Dao
 }
 
+func (s *Service) GetBasicInfo(ctx context.Context, req *pb.BasicInfoReq) (resp *pb.BasicInfo, err error) {
+	resp = new(pb.BasicInfo)
+
+	acc, err := s.dao.Account(ctx, req.Email)
+
+	if err != nil {
+		return
+	}
+	if acc == nil {
+		err = pb.AccountNotExist
+		return
+	}
+
+	if acc.Email == "" || acc.Password == "" {
+		err = ecode.Error(ecode.ServerErr, "存储出错")
+	}
+
+	resp.Sign = acc.Sign
+	resp.Uid = acc.UID
+	resp.Email = acc.Email
+	resp.ProfilePicUrl = acc.ProfilePicUrl
+	resp.Nickname = acc.NickName
+	return
+}
+
 func (s *Service) Register(ctx context.Context, req *pb.RegisterReq) (rsp *pb.RegisterResp, err error) {
 	rsp = &pb.RegisterResp{}
 	rsp, err = s.dao.AddAccount(ctx, req)
 	return rsp, err
 }
 
-func (s *Service) Auth(ctx context.Context, req *pb.AuthReq) (resp *pb.AuthResp, err error) {
+func (s *Service) GetAuthInfo(ctx context.Context, req *pb.AuthReq) (resp *pb.AuthResp, err error) {
 	resp = new(pb.AuthResp)
 
 	acc, err := s.dao.Account(ctx, req.Email)
@@ -35,14 +59,15 @@ func (s *Service) Auth(ctx context.Context, req *pb.AuthReq) (resp *pb.AuthResp,
 		return
 	}
 	if acc == nil {
-		err = ecode.Error(ecode.Unauthorized, "email unregister")
+		err = pb.AccountNotExist
 		return
 	}
-	if acc.Password == "1234" {
-		resp.Token = "new"
-	} else {
-		err = ecode.Unauthorized
+
+	if acc.Email == "" || acc.Password == "" {
+		err = ecode.Error(ecode.ServerErr, "存储出错")
 	}
+	resp.Password = acc.Password
+	resp.Uid = acc.UID
 	return
 }
 

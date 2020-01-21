@@ -4,7 +4,6 @@ import (
 	"net/http"
 
 	pb "chat/app/service/account/api"
-	"chat/app/service/account/internal/model"
 	"github.com/bilibili/kratos/pkg/conf/paladin"
 	"github.com/bilibili/kratos/pkg/log"
 	bm "github.com/bilibili/kratos/pkg/net/http/blademaster"
@@ -36,10 +35,6 @@ func New(s pb.AccountServer) (engine *bm.Engine, err error) {
 
 func initRouter(e *bm.Engine) {
 	e.Ping(ping)
-	g := e.Group("/account")
-	{
-		g.GET("/start", howToStart)
-	}
 }
 
 func ping(ctx *bm.Context) {
@@ -47,12 +42,4 @@ func ping(ctx *bm.Context) {
 		log.Error("ping error(%v)", err)
 		ctx.AbortWithStatus(http.StatusServiceUnavailable)
 	}
-}
-
-// example for http request handler.
-func howToStart(c *bm.Context) {
-	k := &model.Kratos{
-		Hello: "Golang 大法好 !!!",
-	}
-	c.JSON(k, nil)
 }

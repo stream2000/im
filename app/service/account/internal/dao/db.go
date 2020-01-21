@@ -1,10 +1,8 @@
 package dao
 
 import (
-	"chat/app/common/berr"
 	pb "chat/app/service/account/api"
 	"context"
-	"fmt"
 	"github.com/bilibili/kratos/pkg/log"
 	xtime "github.com/bilibili/kratos/pkg/time"
 	"github.com/pkg/errors"
@@ -19,9 +17,7 @@ import (
 
 // 有点内味儿了
 const (
-	_getAccountByEmailSQL = `SELECT id,password FROM account where email=? `
-	_AddAccountSQL        = `INSERT INTO account(id,) `
-	accountTable          = "account"
+	accountTable = "account"
 )
 
 func NewDB() (db *sql.DB, cf func(), err error) {
@@ -44,11 +40,12 @@ func (d *dao) RawAccount(ctx context.Context, email string) (acc *model.Account,
 	mp := map[string]interface{}{
 		"email": email,
 	}
-	cond, vals, err := qb.BuildSelect(accountTable, mp, []string{"id", "password"})
+	cond, vals, err := qb.BuildSelect(accountTable, mp, []string{"id", "password", "sign", "profile_pic_url", "nickname"})
 	log.Infoc(ctx, "conds %s vals %s", cond, vals[0])
 	row := d.db.QueryRow(ctx, cond, vals[0])
 	acc = &model.Account{}
-	if err = row.Scan(&acc.ID, &acc.Password); err != nil {
+	acc.Email = email
+	if err = row.Scan(&acc.UID, &acc.Password, &acc.Sign, &acc.ProfilePicUrl, &acc.NickName); err != nil {
 		if err == sql.ErrNoRows {
 			err = nil
 			acc = nil
@@ -68,7 +65,7 @@ func (d *dao) AddAccount(ctx context.Context, req *pb.RegisterReq) (resp *pb.Reg
 		return
 	}
 	if acc != nil {
-		return nil, berr.EmailRepeated
+		return nil, pb.AccountEmailRepeated
 	} else {
 		// delete the empty cache item
 		_ = d.DeleteCacheAccount(ctx, req.Email)
@@ -78,20 +75,23 @@ func (d *dao) AddAccount(ctx context.Context, req *pb.RegisterReq) (resp *pb.Reg
 	now := xtime.Time(time.Now().Unix())
 	uid := uuid.NewV4().String()
 	data = append(data, map[string]interface{}{
-		"id":             uid,
-		"email":          req.Email,
-		"password":       req.Password,
-		"ctime":          now,
-		"mtime":          now,
-		"nickname":       "user" + uid,
-		"nickname_mtime": now,
+		"id":              uid,
+		"email":           req.Email,
+		"password":        req.Password,
+		"ctime":           now,
+		"mtime":           now,
+		"nickname":        "user-" + uid,
+		"nickname_mtime":  now,
+		"profile_pic_url": "default",
 	})
+
 	cond, vals, err := qb.BuildInsert(accountTable, data)
-	fmt.Println(cond, vals)
+	log.Infoc(ctx, cond, vals)
 	_, err = d.db.Exec(ctx, cond, vals...)
 	if err != nil {
 		return
 	}
+
 	resp.Uid = uid
 	return
 }

@@ -13,6 +13,11 @@ package account.service.v1;
 option go_package = "api";
 option (gogoproto.goproto_getters_all) = false;
 
+enum AccountErrCode{
+  OK = 0;
+  AccountNotExist = 10000;
+  AccountEmailRepeated = 10001;
+}
 
 message RegisterReq {
   string email = 1 [(gogoproto.moretags) = 'validate:"required,email" json:"email"'];
@@ -23,6 +28,28 @@ message RegisterResp {
   string uid = 1 [(gogoproto.moretags) = 'json:"uid"'];
 }
 
+message AuthReq{
+  string email = 1 [(gogoproto.moretags) = 'validate:"required" form:"email"'];
+  //  string password = 2 [(gogoproto.moretags) = 'validate:"required"'];
+}
+
+message AuthResp{
+  string uid = 1 [(gogoproto.moretags) = 'json:"uid"'];
+  string password = 2 [(gogoproto.moretags) = 'json:"password"'];
+}
+
+message BasicInfoReq{
+  string email = 1 [(gogoproto.moretags) = 'validate:"required" form:"email"'];
+}
+
+message BasicInfo{
+  string nickname = 1 [(gogoproto.moretags) = 'json:"nickname"'];
+  string sign = 2 [(gogoproto.moretags) = 'json:"sign"'];
+  string profilePicUrl = 3 [(gogoproto.moretags) = 'json:"profile_pic_url"'];
+  string email = 4 [(gogoproto.moretags) = 'validate:"required"'];
+  string uid = 5 [(gogoproto.moretags) = 'json:"uid"'];
+}
+
 service Account {
   rpc Ping(.google.protobuf.Empty) returns (.google.protobuf.Empty);
   rpc Register(RegisterReq) returns (RegisterResp) {
@@ -30,20 +57,18 @@ service Account {
       post: "/account/register"
     };
   };
-  rpc Auth (AuthReq) returns (AuthResp){
+  rpc GetAuthInfo (AuthReq) returns (AuthResp){
     option (google.api.http) = {
       get: "/account/auth"
     };
+  };
     
+  rpc GetBasicInfo (BasicInfoReq) returns (BasicInfo){
+    option (google.api.http) = {
+      get: "/account/basicInfo"
+    }; 
   };
 }
 
-message AuthReq{
-  string email = 1 [(gogoproto.moretags) = 'validate:"required"'];
-  string password = 2 [(gogoproto.moretags) = 'validate:"required"'];
-}
 
-message AuthResp{
-  string token = 1 [(gogoproto.moretags) = 'json:"token"'];
-}
 

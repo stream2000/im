@@ -1,10 +1,5 @@
 package model
 
-// Kratos hello kratos.
-type Kratos struct {
-	Hello string
-}
-
 type Article struct {
 	ID      int64
 	Title   string
@@ -13,10 +8,10 @@ type Article struct {
 }
 
 type Account struct {
-	ID       string
-	Email    string
-	Password string
-	//Description string
-	//PhoneNumber string
-	//Birthday xtime.Time
+	UID           string
+	Email         string
+	Password      string
+	NickName      string
+	Sign          string
+	ProfilePicUrl string
 }
