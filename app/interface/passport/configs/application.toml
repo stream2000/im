@@ -1,0 +1,7 @@
+
+# This is a TOML document. Boom~
+demoExpire = "24h"
+
+Salt1 = "12121212dfsflskdhjfsjdfhls"
+Salt2 = "212ewe"
+JwtSecret = "212121sdswemn"

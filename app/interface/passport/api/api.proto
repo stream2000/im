@@ -1,0 +1,47 @@
+syntax = "proto3";
+
+import "github.com/gogo/protobuf/gogoproto/gogo.proto";
+import "google/api/annotations.proto";
+import "google/protobuf/empty.proto";
+package passport.interface.v1;
+
+
+option go_package = "api";
+option (gogoproto.goproto_getters_all) = false;
+
+
+message RegisterReq {
+  string email = 1 [(gogoproto.moretags) = 'json:"email" validate:"email,required"'];
+  string password = 2 [(gogoproto.moretags) = 'json:"password" validate:"required"'];
+}
+
+message RegisterResp {
+  int64 uid = 1 [(gogoproto.moretags) = 'json:"uid"'];
+}
+
+message LoginReq {
+  string email = 1 [(gogoproto.moretags) = 'form:"email" validate:"email,required"'];
+  string password = 2 [(gogoproto.moretags) = 'form:"password" validate:"required"'];
+}
+
+message LoginResp {
+  int64  uid = 1 [(gogoproto.moretags) = 'json:"uid"'];
+  string token = 2 [(gogoproto.moretags) = 'json:"token"'];
+  string nickname = 3 [(gogoproto.moretags) = 'json:"nickname"'];
+  string sign = 4 [(gogoproto.moretags) = 'json:"sign"'];
+  string profilePicUrl = 5 [(gogoproto.moretags) = 'json:"profile_pic_url"'];
+}
+
+service Passport{
+  rpc Register(RegisterReq) returns (RegisterResp){
+  option (google.api.http) = {
+      post: "/passport/register"
+    };
+  };
+  //`midware:"basic"`
+  rpc Login(.google.protobuf.Empty) returns (LoginResp){
+  option (google.api.http) = {
+      get: "/passport/login"
+    };
+  };
+}
