@@ -374,6 +374,7 @@ type AccountClient interface {
 	Ping(ctx context.Context, in *empty.Empty, opts ...grpc.CallOption) (*empty.Empty, error)
 	Register(ctx context.Context, in *RegisterReq, opts ...grpc.CallOption) (*RegisterResp, error)
 	GetAuthInfo(ctx context.Context, in *AuthReq, opts ...grpc.CallOption) (*AuthResp, error)
+	// `midware:"auth"`
 	GetBasicInfo(ctx context.Context, in *BasicInfoReq, opts ...grpc.CallOption) (*BasicInfo, error)
 }
 
@@ -426,6 +427,7 @@ type AccountServer interface {
 	Ping(context.Context, *empty.Empty) (*empty.Empty, error)
 	Register(context.Context, *RegisterReq) (*RegisterResp, error)
 	GetAuthInfo(context.Context, *AuthReq) (*AuthResp, error)
+	// `midware:"auth"`
 	GetBasicInfo(context.Context, *BasicInfoReq) (*BasicInfo, error)
 }
 

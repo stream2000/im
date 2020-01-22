@@ -62,7 +62,7 @@ service Account {
       get: "/account/auth"
     };
   };
-    
+  // `midware:"auth"`
   rpc GetBasicInfo (BasicInfoReq) returns (BasicInfo){
     option (google.api.http) = {
       get: "/account/basicInfo"

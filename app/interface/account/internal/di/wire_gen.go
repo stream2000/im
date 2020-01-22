@@ -6,9 +6,9 @@
 package di
 
 import (
-	"chat/app/service/account/internal/dao"
-	"chat/app/service/account/internal/server/grpc"
-	"chat/app/service/account/internal/service"
+	"chat/app/interface/account/internal/dao"
+	"chat/app/interface/account/internal/server/http"
+	"chat/app/interface/account/internal/service"
 )
 
 // Injectors from wire.go:
@@ -44,7 +44,7 @@ func InitApp() (*App, func(), error) {
 		cleanup()
 		return nil, nil, err
 	}
-	server, err := grpc.New(serviceService)
+	engine, err := http.New(serviceService)
 	if err != nil {
 		cleanup5()
 		cleanup4()
@@ -53,7 +53,7 @@ func InitApp() (*App, func(), error) {
 		cleanup()
 		return nil, nil, err
 	}
-	app, cleanup6, err := NewApp(serviceService, server)
+	app, cleanup6, err := NewApp(serviceService, engine)
 	if err != nil {
 		cleanup5()
 		cleanup4()

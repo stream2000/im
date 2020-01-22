@@ -2,12 +2,11 @@ package grpc
 
 import (
 	pb "chat/app/service/account/api"
-
 	"github.com/bilibili/kratos/pkg/conf/paladin"
 	"github.com/bilibili/kratos/pkg/net/rpc/warden"
 )
 
-// New new a grpc server.
+// New new a grpc http.
 func New(svc pb.AccountServer) (ws *warden.Server, err error) {
 	var (
 		cfg warden.ServerConfig
