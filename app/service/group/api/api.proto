@@ -1,0 +1,67 @@
+// 定义项目 API 的 proto 文件 可以同时描述 gRPC 和 HTTP API
+// protobuf 文件参考:
+//  - https://developers.google.com/protocol-buffers/
+syntax = "proto3";
+
+import "github.com/gogo/protobuf/gogoproto/gogo.proto";
+import "google/api/annotations.proto";
+import "google/protobuf/empty.proto";
+
+package group.service.v1;
+
+
+option go_package = "api";
+option (gogoproto.goproto_getters_all) = false;
+
+
+
+message GroupInfo{
+    int64 gid = 1;
+    string name = 2;
+    string description = 3;
+    int32 member_number = 4;
+    repeated int64 members = 5;
+//    int64 admin_id = 6;
+//    repeated int64 manager_id = 7;
+}
+
+message CreateGroupReq {
+    int64 uid = 1;
+    string name = 2;
+    string description = 3;
+}
+
+message GroupInfoByIdReq {
+   int64 gid = 1 [(gogoproto.moretags) = 'validate:"required"'];
+}
+message GroupsInfoByNameReq {
+    string name = 1[(gogoproto.moretags) = 'validate:"required"'];
+}
+// specially, if the uid is 0, return all groups available
+message GetAllGroupsReq{
+    int64 uid = 1;
+}
+
+message GroupBasicInfo{
+    int64  gid = 1;
+    string name = 2;
+    string description = 3;
+}
+
+message AllGroups{
+    repeated GroupBasicInfo groups  = 1 ;
+}
+
+// every one can
+message AddMemberReq{
+    int64 gid = 1;
+    int64 uid = 2;
+}
+
+service Group {
+    rpc CreateGroup (CreateGroupReq) returns (GroupInfo);
+    rpc GetGroupInfo (GroupInfoByIdReq) returns (GroupInfo);
+    rpc GetAllGroups (GetAllGroupsReq) returns (AllGroups);
+    rpc GetAllGroupsLikeName (GroupsInfoByNameReq) returns (AllGroups);
+    rpc AddMember (AddMemberReq) returns (.google.protobuf.Empty);
+}
