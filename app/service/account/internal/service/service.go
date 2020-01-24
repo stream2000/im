@@ -6,7 +6,6 @@ import (
 	"context"
 	"github.com/bilibili/kratos/pkg/conf/paladin"
 	"github.com/bilibili/kratos/pkg/ecode"
-	"github.com/golang/protobuf/ptypes/empty"
 	"github.com/google/wire"
 )
 
@@ -22,20 +21,19 @@ type Service struct {
 func (s *Service) GetBasicInfo(ctx context.Context, req *pb.BasicInfoReq) (resp *pb.BasicInfo, err error) {
 	resp = new(pb.BasicInfo)
 
-	acc, err := s.dao.Account(ctx, req.Email)
-
+	acc, err := s.dao.Account(ctx, req.Uid)
 	if err != nil {
 		return
 	}
 	if acc == nil {
-		err = pb.AccountNotExist
+		err = nil
 		return
 	}
 
 	if acc.Email == "" || acc.Password == "" {
 		err = ecode.Error(ecode.ServerErr, "存储出错")
+		return
 	}
-
 	resp.Sign = acc.Sign
 	resp.Uid = acc.UID
 	resp.Email = acc.Email
@@ -53,13 +51,12 @@ func (s *Service) Register(ctx context.Context, req *pb.RegisterReq) (rsp *pb.Re
 func (s *Service) GetAuthInfo(ctx context.Context, req *pb.AuthReq) (resp *pb.AuthResp, err error) {
 	resp = new(pb.AuthResp)
 
-	acc, err := s.dao.Account(ctx, req.Email)
+	acc, err := s.dao.GetAccountByEmail(ctx, req.Email)
 
 	if err != nil {
 		return
 	}
 	if acc == nil {
-		err = pb.AccountNotExist
 		return
 	}
 
@@ -81,11 +78,6 @@ func New(d dao.Dao) (s *Service, cf func(), err error) {
 	// so all config can read from the file
 	err = paladin.Watch("application.toml", s.ac)
 	return
-}
-
-// Ping ping the resource.
-func (s *Service) Ping(ctx context.Context, e *empty.Empty) (*empty.Empty, error) {
-	return &empty.Empty{}, s.dao.Ping(ctx)
 }
 
 // Close close the resource.

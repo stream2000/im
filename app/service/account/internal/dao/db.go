@@ -18,7 +18,8 @@ import (
 
 // 有点内味儿了
 const (
-	accountTable = "account"
+	accountTable       = "account"
+	_getAccountByIdSql = "select email,password,sign,profile_pic_url,nickname from account where id=?"
 )
 
 func NewDB() (db *sql.DB, cf func(), err error) {
@@ -37,22 +38,18 @@ func NewDB() (db *sql.DB, cf func(), err error) {
 	return
 }
 
-func (d *dao) RawAccount(ctx context.Context, email string) (acc *model.Account, err error) {
-	mp := map[string]interface{}{
-		"email": email,
-	}
-	cond, vals, err := qb.BuildSelect(accountTable, mp, []string{"id", "password", "sign", "profile_pic_url", "nickname"})
-	log.Infoc(ctx, "conds %s vals %s", cond, vals[0])
-	row := d.db.QueryRow(ctx, cond, vals[0])
+func (d *dao) RawAccount(ctx context.Context, uid int64) (acc *model.Account, err error) {
+	row := d.db.QueryRow(ctx, _getAccountByIdSql, uid)
 	acc = &model.Account{}
-	acc.Email = email
-	if err = row.Scan(&acc.UID, &acc.Password, &acc.Sign, &acc.ProfilePicUrl, &acc.NickName); err != nil {
+	acc.UID = uid
+	if err = row.Scan(&acc.Email, &acc.Password, &acc.Sign, &acc.ProfilePicUrl, &acc.NickName); err != nil {
 		if err == sql.ErrNoRows {
 			err = nil
 			acc = nil
 		} else {
 			err = errors.WithStack(err)
 		}
+		log.Error("Unknow error %+v", err)
 		return
 	}
 	return
@@ -72,26 +69,23 @@ func (d *dao) AddAccount(ctx context.Context, req *pb.RegisterReq) (resp *pb.Reg
 		}
 	}()
 
-	acc, err := d.Account(ctx, req.Email)
+	acc, err := d.GetAccountByEmail(ctx, req.Email)
 	if err != nil {
 		return
 	}
 	if acc != nil {
 		return nil, pb.AccountEmailRepeated
-	} else {
-		// delete the empty cache item
-		_ = d.DeleteCacheAccount(ctx, req.Email)
 	}
 
 	var data []map[string]interface{}
 	now := xtime.Time(time.Now().Unix())
-	uuid := uuid.NewV4().String()
+	u := uuid.NewV4().String()
 	data = append(data, map[string]interface{}{
 		"email":           req.Email,
 		"password":        req.Password,
 		"ctime":           now,
 		"mtime":           now,
-		"nickname":        "user-" + uuid,
+		"nickname":        "user-" + u,
 		"nickname_mtime":  now,
 		"profile_pic_url": "default",
 	})
@@ -108,5 +102,27 @@ func (d *dao) AddAccount(ctx context.Context, req *pb.RegisterReq) (resp *pb.Reg
 		return nil, ecode.Error(ecode.ServerErr, "fatal error when get auto increment id")
 	}
 	resp.Uid = lastInsertedId
+	// delete the empty cache item
+	_ = d.DeleteCacheAccount(ctx, resp.Uid)
+	return
+}
+
+func (d *dao) GetAccountByEmail(ctx context.Context, email string) (acc *model.Account, err error) {
+	where := map[string]interface{}{
+		"email": email,
+	}
+	cond, vals, err := qb.BuildSelect(accountTable, where, []string{"id", "password", "sign", "profile_pic_url", "nickname"})
+	row := d.db.QueryRow(ctx, cond, vals[0])
+	acc = &model.Account{}
+	acc.Email = email
+	if err = row.Scan(&acc.UID, &acc.Password, &acc.Sign, &acc.ProfilePicUrl, &acc.NickName); err != nil {
+		if err == sql.ErrNoRows {
+			err = nil
+			acc = nil
+		} else {
+			err = errors.WithStack(err)
+		}
+		return
+	}
 	return
 }

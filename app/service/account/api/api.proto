@@ -4,7 +4,6 @@
 syntax = "proto3";
 
 import "github.com/gogo/protobuf/gogoproto/gogo.proto";
-import "google/protobuf/empty.proto";
 import "google/api/annotations.proto";
 
 package account.service.v1;
@@ -39,7 +38,7 @@ message AuthResp{
 }
 
 message BasicInfoReq{
-  string email = 1 [(gogoproto.moretags) = 'validate:"required" form:"email"'];
+  int64 uid = 1;
 }
 
 message BasicInfo{
@@ -51,23 +50,9 @@ message BasicInfo{
 }
 
 service Account {
-  rpc Ping(.google.protobuf.Empty) returns (.google.protobuf.Empty);
-  rpc Register(RegisterReq) returns (RegisterResp) {
-    option (google.api.http) = {
-      post: "/account/register"
-    };
-  };
-  rpc GetAuthInfo (AuthReq) returns (AuthResp){
-    option (google.api.http) = {
-      get: "/account/auth"
-    };
-  };
-  // `midware:"auth"`
-  rpc GetBasicInfo (BasicInfoReq) returns (BasicInfo){
-    option (google.api.http) = {
-      get: "/account/basicInfo"
-    }; 
-  };
+  rpc Register(RegisterReq) returns (RegisterResp) ;
+  rpc GetAuthInfo (AuthReq) returns (AuthResp);
+  rpc GetBasicInfo (BasicInfoReq) returns (BasicInfo);
 }
 
 

@@ -50,7 +50,7 @@ func RefreshToken(claims Claims) (string, error) {
 }
 func ParseToken(token string) (*Claims, error) {
 	tokenClaims, err := jwt.ParseWithClaims(token, &Claims{}, func(token *jwt.Token) (interface{}, error) {
-		return JwtSecret, nil
+		return []byte(JwtSecret), nil
 	})
 
 	if tokenClaims != nil {

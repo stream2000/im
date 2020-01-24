@@ -5,11 +5,11 @@
   It is generated from:
   type _mc interface {
 		// mc: -key=keyAcc -type=get
-		CacheAccount(c context.Context, email string) (*model.Account, error)
+		CacheAccount(c context.Context, id int64) (*model.Account, error)
 		// mc: -key=keyAcc -expire=d.demoExpire
-		AddCacheAccount(c context.Context, email string, acc *model.Account) (err error)
+		AddCacheAccount(c context.Context, id int64, acc *model.Account) (err error)
 		// mc: -key=keyAcc
-		DeleteCacheAccount(c context.Context, email string) (err error)
+		DeleteCacheAccount(c context.Context, id int64) (err error)
 	}
 */
 
@@ -27,7 +27,7 @@ import (
 var _ _mc
 
 // CacheAccount get data from mc
-func (d *dao) CacheAccount(c context.Context, id string) (res *model.Account, err error) {
+func (d *dao) CacheAccount(c context.Context, id int64) (res *model.Account, err error) {
 	key := keyAcc(id)
 	res = &model.Account{}
 	if err = d.mc.Get(c, key).Scan(res); err != nil {
@@ -44,7 +44,7 @@ func (d *dao) CacheAccount(c context.Context, id string) (res *model.Account, er
 }
 
 // AddCacheAccount Set data to mc
-func (d *dao) AddCacheAccount(c context.Context, id string, val *model.Account) (err error) {
+func (d *dao) AddCacheAccount(c context.Context, id int64, val *model.Account) (err error) {
 	if val == nil {
 		return
 	}
@@ -58,7 +58,7 @@ func (d *dao) AddCacheAccount(c context.Context, id string, val *model.Account) 
 }
 
 // DeleteCacheAccount delete data from mc
-func (d *dao) DeleteCacheAccount(c context.Context, id string) (err error) {
+func (d *dao) DeleteCacheAccount(c context.Context, id int64) (err error) {
 	key := keyAcc(id)
 	if err = d.mc.Delete(c, key); err != nil {
 		if err == memcache.ErrNotFound {

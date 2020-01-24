@@ -3,6 +3,7 @@ package dao
 import (
 	"chat/app/service/account/internal/model"
 	"context"
+	"fmt"
 	"github.com/bilibili/kratos/pkg/cache/memcache"
 	"github.com/bilibili/kratos/pkg/conf/paladin"
 	"github.com/bilibili/kratos/pkg/log"
@@ -11,11 +12,11 @@ import (
 //go:generate kratos tool genmc
 type _mc interface {
 	// mc: -key=keyAcc -type=get
-	CacheAccount(c context.Context, email string) (*model.Account, error)
+	CacheAccount(c context.Context, id int64) (*model.Account, error)
 	// mc: -key=keyAcc -expire=d.demoExpire
-	AddCacheAccount(c context.Context, email string, acc *model.Account) (err error)
+	AddCacheAccount(c context.Context, id int64, acc *model.Account) (err error)
 	// mc: -key=keyAcc
-	DeleteCacheAccount(c context.Context, email string) (err error)
+	DeleteCacheAccount(c context.Context, id int64) (err error)
 }
 
 func NewMC() (mc *memcache.Memcache, cf func(), err error) {
@@ -41,6 +42,6 @@ func (d *dao) PingMC(ctx context.Context) (err error) {
 	return
 }
 
-func keyAcc(id string) string {
-	return "acc_" + id
+func keyAcc(id int64) string {
+	return fmt.Sprintf("acc_%d", id)
 }

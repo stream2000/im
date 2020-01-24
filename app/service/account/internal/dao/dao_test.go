@@ -42,7 +42,7 @@ func TestMain(m *testing.M) {
 	os.Exit(ret)
 }
 func TestDao_Account(t *testing.T) {
-	res, err := d.Account(ctx, "a36648106@gmail.com")
+	res, err := d.Account(ctx, 1)
 	if err != nil {
 		panic(err)
 	}
@@ -66,7 +66,7 @@ func TestDao_Account(t *testing.T) {
 		log.Infoc(ctx, "UID: %s", uid)
 	}
 
-	addedAcc, err := d.Account(ctx, newEmail)
+	addedAcc, err := d.Account(ctx, 1)
 
 	if err != nil {
 		panic(err)

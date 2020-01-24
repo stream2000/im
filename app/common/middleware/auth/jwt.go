@@ -32,7 +32,6 @@ func BearerAuth(jwtSecret string, maxRefreshTime int) func(*bm.Context) {
 			ctx.Abort()
 			return
 		}
-
 		claims, err := jwtTool.ParseToken(token)
 		if err != nil {
 			switch err.(*jwt.ValidationError).Errors {
@@ -56,7 +55,7 @@ func BearerAuth(jwtSecret string, maxRefreshTime int) func(*bm.Context) {
 			claims.RefreshTimes += 1
 			claims.ExpiresAt = now.Add(time.Hour * 2).Unix()
 			newToken, _ := jwtTool.RefreshToken(*claims)
-			ctx.Writer.Header().Set("RefreshHeader", newToken)
+			ctx.Writer.Header().Set("Refresh-Token", newToken)
 		}
 	}
 }

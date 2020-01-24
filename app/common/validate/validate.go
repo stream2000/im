@@ -15,10 +15,10 @@ var (
 )
 
 func init() {
-	_ = binding.Validator.RegisterValidation("email", emailCheck)
+	_ = binding.Validator.RegisterValidation("email", EmailCheck)
 }
 
-func emailCheck(fl validator.FieldLevel) bool {
+func EmailCheck(fl validator.FieldLevel) bool {
 	email := fl.Field().String()
 	return RegEmailCheck.MatchString(email)
 }

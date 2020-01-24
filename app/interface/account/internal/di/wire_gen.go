@@ -7,7 +7,7 @@ package di
 
 import (
 	"chat/app/interface/account/internal/dao"
-	"chat/app/interface/account/internal/server/http"
+	"chat/app/interface/account/internal/server"
 	"chat/app/interface/account/internal/service"
 )
 
@@ -44,7 +44,7 @@ func InitApp() (*App, func(), error) {
 		cleanup()
 		return nil, nil, err
 	}
-	engine, err := http.New(serviceService)
+	engine, err := server.New(serviceService)
 	if err != nil {
 		cleanup5()
 		cleanup4()

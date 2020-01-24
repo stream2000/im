@@ -1,10 +1,11 @@
 package dao
 
 import (
+	pb "chat/app/interface/account/api"
+	acc "chat/app/service/account/api"
 	"context"
 	"time"
 
-	"chat/app/interface/account/internal/model"
 	"github.com/bilibili/kratos/pkg/cache/memcache"
 	"github.com/bilibili/kratos/pkg/cache/redis"
 	"github.com/bilibili/kratos/pkg/conf/paladin"
@@ -22,8 +23,8 @@ var Provider = wire.NewSet(New, NewDB, NewRedis, NewMC)
 type Dao interface {
 	Close()
 	Ping(ctx context.Context) (err error)
-	// bts: -nullcache=&model.Article{ID:-1} -check_null_code=$!=nil&&$.ID==-1
-	Article(c context.Context, id int64) (*model.Article, error)
+	// bts: -check_null_code=$!=nil&&$.Uid==0
+	BasicInfo(ctx context.Context, id int64) (*pb.BasicInfo, error)
 }
 
 // dao dao.
@@ -33,6 +34,7 @@ type dao struct {
 	mc         *memcache.Memcache
 	cache      *fanout.Fanout
 	demoExpire int32
+	accClient  acc.AccountClient
 }
 
 // New new a dao and return.
@@ -47,12 +49,17 @@ func newDao(r *redis.Redis, mc *memcache.Memcache, db *sql.DB) (d *dao, cf func(
 	if err = paladin.Get("application.toml").UnmarshalTOML(&cfg); err != nil {
 		return
 	}
+	wardenClient, err := NewWardenClient()
+	if err != nil {
+		panic(err)
+	}
 	d = &dao{
 		db:         db,
 		redis:      r,
 		mc:         mc,
 		cache:      fanout.New("cache"),
 		demoExpire: int32(time.Duration(cfg.DemoExpire) / time.Second),
+		accClient:  wardenClient,
 	}
 	cf = d.Close
 	return

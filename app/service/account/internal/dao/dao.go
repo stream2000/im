@@ -23,9 +23,10 @@ var Provider = wire.NewSet(New, NewDB, NewRedis, NewMC)
 type Dao interface {
 	Close()
 	Ping(ctx context.Context) (err error)
-	// bts:  -nullcache=&model.Account{Email:"invalid"} -check_null_code=$!=nil&&$.Email=="invalid" -sync=true
-	Account(c context.Context, email string) (*model.Account, error)
+	// bts:  -nullcache=&model.Account{UID:0} -check_null_code=$!=nil&&$.UID==0 -sync=true
+	Account(c context.Context, id int64) (*model.Account, error)
 	AddAccount(c context.Context, req *pb.RegisterReq) (*pb.RegisterResp, error)
+	GetAccountByEmail(ctx context.Context, email string) (acc *model.Account, err error)
 }
 
 //-nullcache=&model.Account{Email:"invalid"}

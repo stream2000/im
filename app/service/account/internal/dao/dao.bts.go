@@ -6,9 +6,9 @@
   type Dao interface {
 		Close()
 		Ping(ctx context.Context) (err error)
-		// bts:  -nullcache=&model.Account{Email:"invalid"} -check_null_code=$!=nil&&$.Email=="invalid" -sync=true
-		Account(c context.Context, email string) (*model.Account, error)
-		AddAccount(c context.Context,req *pb.RegisterReq)(*pb.RegisterResp,error)
+		// bts:  -nullcache=&model.Account{UID:0} -check_null_code=$!=nil&&$.UID==0 -sync=true
+		Account(c context.Context, id int64) (*model.Account, error)
+		AddAccount(c context.Context, req *pb.RegisterReq) (*pb.RegisterResp, error)
 	}
 */
 
@@ -22,15 +22,15 @@ import (
 )
 
 // Account get data from cache if miss will call source method, then add to cache.
-func (d *dao) Account(c context.Context, email string) (res *model.Account, err error) {
+func (d *dao) Account(c context.Context, id int64) (res *model.Account, err error) {
 	addCache := true
-	res, err = d.CacheAccount(c, email)
+	res, err = d.CacheAccount(c, id)
 	if err != nil {
 		addCache = false
 		err = nil
 	}
 	defer func() {
-		if res != nil && res.Email == "invalid" {
+		if res != nil && res.UID == 0 {
 			res = nil
 		}
 	}()
@@ -39,17 +39,17 @@ func (d *dao) Account(c context.Context, email string) (res *model.Account, err 
 		return
 	}
 	cache.MetricMisses.Inc("bts:Account")
-	res, err = d.RawAccount(c, email)
+	res, err = d.RawAccount(c, id)
 	if err != nil {
 		return
 	}
 	miss := res
 	if miss == nil {
-		miss = &model.Account{Email: "invalid"}
+		miss = &model.Account{UID: 0}
 	}
 	if !addCache {
 		return
 	}
-	d.AddCacheAccount(c, email, miss)
+	d.AddCacheAccount(c, id, miss)
 	return
 }

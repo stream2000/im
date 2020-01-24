@@ -6,8 +6,8 @@
   type Dao interface {
 		Close()
 		Ping(ctx context.Context) (err error)
-		// bts: -nullcache=&model.Article{ID:-1} -check_null_code=$!=nil&&$.ID==-1
-		Article(c context.Context, id int64) (*model.Article, error)
+		// bts: -check_null_code=$!=nil&&$.Uid==0
+		BasicInfo(ctx context.Context, id int64)(*pb.BasicInfo,error)
 	}
 */
 
@@ -16,41 +16,33 @@ package dao
 import (
 	"context"
 
-	"chat/app/interface/account/internal/model"
+	pb "chat/app/interface/account/api"
 	"github.com/bilibili/kratos/pkg/cache"
 )
 
-// Article get data from cache if miss will call source method, then add to cache.
-func (d *dao) Article(c context.Context, id int64) (res *model.Article, err error) {
+// BasicInfo get data from cache if miss will call source method, then add to cache.
+func (d *dao) BasicInfo(c context.Context, id int64) (res *pb.BasicInfo, err error) {
 	addCache := true
-	res, err = d.CacheArticle(c, id)
+	res, err = d.CacheBasicInfo(c, id)
 	if err != nil {
 		addCache = false
 		err = nil
 	}
-	defer func() {
-		if res != nil && res.ID == -1 {
-			res = nil
-		}
-	}()
 	if res != nil {
-		cache.MetricHits.Inc("bts:Article")
+		cache.MetricHits.Inc("bts:BasicInfo")
 		return
 	}
-	cache.MetricMisses.Inc("bts:Article")
-	res, err = d.RawArticle(c, id)
+	cache.MetricMisses.Inc("bts:BasicInfo")
+	res, err = d.RawBasicInfo(c, id)
 	if err != nil {
 		return
 	}
 	miss := res
-	if miss == nil {
-		miss = &model.Article{ID: -1}
-	}
 	if !addCache {
 		return
 	}
 	d.cache.Do(c, func(c context.Context) {
-		d.AddCacheArticle(c, id, miss)
+		d.AddCacheBasicInfo(c, id, miss)
 	})
 	return
 }

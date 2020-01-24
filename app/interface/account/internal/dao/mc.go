@@ -1,10 +1,10 @@
 package dao
 
 import (
+	pb "chat/app/interface/account/api"
 	"context"
 	"fmt"
 
-	"chat/app/interface/account/internal/model"
 	"github.com/bilibili/kratos/pkg/cache/memcache"
 	"github.com/bilibili/kratos/pkg/conf/paladin"
 	"github.com/bilibili/kratos/pkg/log"
@@ -12,12 +12,12 @@ import (
 
 //go:generate kratos tool genmc
 type _mc interface {
-	// mc: -key=keyArt -type=get
-	CacheArticle(c context.Context, id int64) (*model.Article, error)
-	// mc: -key=keyArt -expire=d.demoExpire
-	AddCacheArticle(c context.Context, id int64, art *model.Article) (err error)
-	// mc: -key=keyArt
-	DeleteArticleCache(c context.Context, id int64) (err error)
+	// mc: -key=keyBasic -type=get
+	CacheBasicInfo(c context.Context, id int64) (*pb.BasicInfo, error)
+	// mc: -key=keyBasic -expire=d.demoExpire
+	AddCacheBasicInfo(c context.Context, id int64, art *pb.BasicInfo) (err error)
+	// mc: -key=keyBasic
+	DeleteBasicInfoCache(c context.Context, id int64) (err error)
 }
 
 func NewMC() (mc *memcache.Memcache, cf func(), err error) {
@@ -43,6 +43,6 @@ func (d *dao) PingMC(ctx context.Context) (err error) {
 	return
 }
 
-func keyArt(id int64) string {
+func keyBasic(id int64) string {
 	return fmt.Sprintf("art_%d", id)
 }
