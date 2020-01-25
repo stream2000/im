@@ -1,0 +1,294 @@
+{
+    "swagger": "2.0",
+    "info": {
+        "title": "api.proto",
+        "version": "1"
+    },
+    "schemes": [
+        "http",
+        "https"
+    ],
+    "consumes": [
+        "application/json",
+        "multipart/form-data"
+    ],
+    "produces": [
+        "application/json"
+    ],
+    "paths": {
+        "/group/addMember": {
+            "post": {
+                "summary": "/group/addMember",
+                "responses": {
+                    "200": {
+                        "description": "A successful response.",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "code": {
+                                    "type": "integer"
+                                },
+                                "message": {
+                                    "type": "string"
+                                },
+                                "data": {
+                                    "$ref": "#/definitions/.google.protobuf.Empty"
+                                }
+                            }
+                        }
+                    }
+                },
+                "parameters": [
+                    {
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/.group.interface.v1.AddMemberReq"
+                        }
+                    }
+                ],
+                "tags": [
+                    "group.interface.v1.Group"
+                ]
+            }
+        },
+        "/group/all": {
+            "get": {
+                "summary": "/group/all",
+                "responses": {
+                    "200": {
+                        "description": "A successful response.",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "code": {
+                                    "type": "integer"
+                                },
+                                "message": {
+                                    "type": "string"
+                                },
+                                "data": {
+                                    "$ref": "#/definitions/.group.interface.v1.AllGroups"
+                                }
+                            }
+                        }
+                    }
+                },
+                "parameters": [
+                    {
+                        "name": "name",
+                        "in": "query",
+                        "required": false,
+                        "type": "string"
+                    }
+                ],
+                "tags": [
+                    "group.interface.v1.Group"
+                ]
+            }
+        },
+        "/group/all/user": {
+            "get": {
+                "summary": "/group/all/user",
+                "responses": {
+                    "200": {
+                        "description": "A successful response.",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "code": {
+                                    "type": "integer"
+                                },
+                                "message": {
+                                    "type": "string"
+                                },
+                                "data": {
+                                    "$ref": "#/definitions/.group.interface.v1.AllGroups"
+                                }
+                            }
+                        }
+                    }
+                },
+                "tags": [
+                    "group.interface.v1.Group"
+                ]
+            }
+        },
+        "/group/create": {
+            "post": {
+                "summary": "/group/create",
+                "responses": {
+                    "200": {
+                        "description": "A successful response.",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "code": {
+                                    "type": "integer"
+                                },
+                                "message": {
+                                    "type": "string"
+                                },
+                                "data": {
+                                    "$ref": "#/definitions/.group.interface.v1.GroupInfo"
+                                }
+                            }
+                        }
+                    }
+                },
+                "parameters": [
+                    {
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/.group.interface.v1.CreateGroupReq"
+                        }
+                    }
+                ],
+                "tags": [
+                    "group.interface.v1.Group"
+                ]
+            }
+        },
+        "/group/info": {
+            "get": {
+                "summary": "/group/info",
+                "responses": {
+                    "200": {
+                        "description": "A successful response.",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "code": {
+                                    "type": "integer"
+                                },
+                                "message": {
+                                    "type": "string"
+                                },
+                                "data": {
+                                    "$ref": "#/definitions/.group.interface.v1.GroupInfo"
+                                }
+                            }
+                        }
+                    }
+                },
+                "parameters": [
+                    {
+                        "name": "gid",
+                        "in": "query",
+                        "required": true,
+                        "type": "integer"
+                    }
+                ],
+                "tags": [
+                    "group.interface.v1.Group"
+                ]
+            }
+        }
+    },
+    "definitions": {
+        ".google.protobuf.Empty": {
+            "type": "object",
+            "properties": {},
+            "description": "A generic empty message that you can re-use to avoid defining duplicated\n empty messages in your APIs. A typical example is to use it as the request\n or the response type of an API method. For instance:\n\n     service Foo {\n       rpc Bar(google.protobuf.Empty) returns (google.protobuf.Empty);\n     }\n\n The JSON representation for `Empty` is empty JSON object `{}`."
+        },
+        ".group.interface.v1.AddMemberReq": {
+            "type": "object",
+            "properties": {
+                "gid": {
+                    "type": "integer"
+                }
+            },
+            "description": "every one can add to certain group",
+            "required": [
+                "gid"
+            ]
+        },
+        ".group.interface.v1.AllGroups": {
+            "type": "object",
+            "properties": {
+                "groups": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/.group.interface.v1.GroupBasicInfo"
+                    }
+                }
+            },
+            "description": "collection of basic info"
+        },
+        ".group.interface.v1.CreateGroupReq": {
+            "type": "object",
+            "properties": {
+                "name": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string"
+                }
+            },
+            "required": [
+                "name"
+            ]
+        },
+        ".group.interface.v1.GroupBasicInfo": {
+            "type": "object",
+            "properties": {
+                "gid": {
+                    "type": "integer"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string"
+                }
+            },
+            "description": "basic info"
+        },
+        ".group.interface.v1.GroupInfo": {
+            "type": "object",
+            "properties": {
+                "gid": {
+                    "type": "integer"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "member_number": {
+                    "type": "integer"
+                },
+                "members": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                }
+            },
+            "description": "detailed info"
+        },
+        ".group.interface.v1.GroupInfoByIdReq": {
+            "type": "object",
+            "properties": {
+                "gid": {
+                    "type": "integer"
+                }
+            },
+            "required": [
+                "gid"
+            ]
+        },
+        ".group.interface.v1.SearchGroupReq": {
+            "type": "object",
+            "properties": {
+                "name": {
+                    "type": "string"
+                }
+            }
+        }
+    }
+}

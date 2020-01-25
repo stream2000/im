@@ -18,7 +18,7 @@ import (
 func NewWardenClient() (acc.AccountClient, error) {
 	grpccfg := &warden.ClientConfig{
 		Dial:              xtime.Duration(time.Second * 10),
-		Timeout:           xtime.Duration(time.Millisecond * 500),
+		Timeout:           xtime.Duration(time.Millisecond * 250),
 		Subset:            50,
 		KeepAliveInterval: xtime.Duration(time.Second * 60),
 		KeepAliveTimeout:  xtime.Duration(time.Second * 20),

@@ -12,7 +12,7 @@ import (
 
 const (
 	// 还是你妈的纯sql爽
-	_getAllGroups         = "select * from `group`"
+	_getAllGroups         = "select id,name,description from `group`"
 	_getGroupByIdSql      = "select id,description,name  from `group` where id =? "
 	_getMembersOfGroupSQL = `select uid from membership  where gid =?`
 	_getGroupsByUserId    = "select id,name,description from `group` where id in (select gid from membership where uid =?)"
@@ -122,6 +122,9 @@ func (d *dao) GetAllGroups(ctx context.Context) (groups []*model.Group, err erro
 }
 
 func (d *dao) CreateGroup(ctx context.Context, req *pb.CreateGroupReq) (info *pb.GroupInfo, err error) {
+	if req.Description == "" {
+		req.Description = "快来聊天吧~"
+	}
 	res, err := d.db.Exec(ctx, _createGroupSql, req.Name, req.Uid, req.Description)
 	if err != nil {
 		return

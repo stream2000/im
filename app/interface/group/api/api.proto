@@ -1,0 +1,84 @@
+// 定义项目 API 的 proto 文件 可以同时描述 gRPC 和 HTTP API
+// protobuf 文件参考:
+//  - https://developers.google.com/protocol-buffers/
+syntax = "proto3";
+
+import "github.com/gogo/protobuf/gogoproto/gogo.proto";
+import "google/api/annotations.proto";
+import "google/protobuf/empty.proto";
+
+package group.interface.v1;
+
+
+option go_package = "api";
+option (gogoproto.goproto_getters_all) = false;
+
+
+// detailed info
+message GroupInfo{
+  int64 gid = 1;
+  string name = 2;
+  string description = 3;
+  int32 member_number = 4;
+  repeated int64 members = 5;
+}
+
+message CreateGroupReq {
+  string name = 1 [(gogoproto.moretags) = 'validate:"required" json:"name"'];
+  string description = 2[(gogoproto.moretags) = 'json:"description"'];
+}
+
+message GroupInfoByIdReq {
+  int64 gid = 1 [(gogoproto.moretags) = 'validate:"required" form:"gid"'];
+}
+
+message SearchGroupReq {
+  string name = 1[(gogoproto.moretags) = 'form:"name"'];
+}
+
+// basic info
+message GroupBasicInfo{
+  int64  gid = 1;
+  string name = 2;
+  string description = 3;
+}
+
+// collection of basic info
+message AllGroups{
+  repeated GroupBasicInfo groups  = 1 ;
+}
+
+// every one can add to certain group
+message AddMemberReq{
+  int64 gid = 1 [(gogoproto.moretags) = 'validate:"required" json:"gid"'];
+}
+
+service Group {
+  //`midware:"auth"`
+  rpc CreateGroup (CreateGroupReq) returns (GroupInfo){
+    option (google.api.http) = {
+      post: "/group/create"
+    };
+  };
+  rpc GetGroupInfo (GroupInfoByIdReq) returns (GroupInfo){
+    option (google.api.http) = {
+      get: "/group/info"
+    };
+  };
+  rpc GetAllGroups (SearchGroupReq) returns (AllGroups){
+    option (google.api.http) = {
+      get: "/group/all"
+    };
+  };
+  rpc GetAllGroupsByUid (.google.protobuf.Empty) returns (AllGroups){
+    option (google.api.http) = {
+      get: "/group/all/user"
+    };
+  };
+  //`midware:"auth"`
+  rpc AddMember (AddMemberReq) returns (.google.protobuf.Empty){
+    option (google.api.http) = {
+      post: "/group/addMember"
+    };
+  };
+}

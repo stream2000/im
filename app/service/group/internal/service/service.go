@@ -21,15 +21,15 @@ type Service struct {
 	dao dao.Dao
 }
 
-func (s *Service) GetAllGroupsLikeName(ctx context.Context, req *pb.GroupsInfoByNameReq) (*pb.AllGroups, error) {
+func (s *Service) GetAllGroupsLikeName(ctx context.Context, req *pb.GroupsInfoByNameReq) (allGroups *pb.AllGroups, err error) {
+	allGroups = new(pb.AllGroups)
 	groups, err := s.dao.GetAllGroupsByName(ctx, req.Name)
 	if err != nil {
-		return nil, ecode.Error(ecode.ServerErr, "error getting groups by name")
+		return allGroups, ecode.Error(ecode.ServerErr, "error getting groups by name")
 	}
 	if groups == nil {
-		return nil, ecode.NothingFound
+		return allGroups, nil
 	}
-	allGroups := new(pb.AllGroups)
 	for _, g := range groups {
 		basicInfo := new(pb.GroupBasicInfo)
 		basicInfo.Gid = g.Id
@@ -41,22 +41,23 @@ func (s *Service) GetAllGroupsLikeName(ctx context.Context, req *pb.GroupsInfoBy
 }
 
 func (s *Service) CreateGroup(ctx context.Context, req *pb.CreateGroupReq) (*pb.GroupInfo, error) {
+	info := new(pb.GroupInfo)
 	info, err := s.dao.CreateGroup(ctx, req)
 	if err != nil {
-		return nil, errors.Wrap(ecode.ServerErr, "dao error")
+		return info, errors.Wrap(ecode.ServerErr, "dao error")
 	}
 	return info, nil
 }
 
 func (s *Service) GetGroupInfo(ctx context.Context, req *pb.GroupInfoByIdReq) (resp *pb.GroupInfo, err error) {
+	resp = new(pb.GroupInfo)
 	g, err := s.dao.Group(ctx, req.Gid)
 	if err != nil {
-		return nil, ecode.Errorf(ecode.ServerErr, "error when get group info by id %s", err.Error())
+		return resp, ecode.Errorf(ecode.ServerErr, "error when get group info by id %s", err.Error())
 	}
 	if g == nil {
-		return nil, ecode.NothingFound
+		return resp, nil
 	}
-	resp = new(pb.GroupInfo)
 	resp.Gid = g.Id
 	resp.Name = g.Name
 	resp.Description = g.Description
@@ -65,7 +66,7 @@ func (s *Service) GetGroupInfo(ctx context.Context, req *pb.GroupInfoByIdReq) (r
 }
 
 func (s *Service) GetAllGroups(ctx context.Context, req *pb.GetAllGroupsReq) (resp *pb.AllGroups, err error) {
-
+	resp = new(pb.AllGroups)
 	var groups []*model.Group
 	if req.Uid == 0 {
 		groups, err = s.dao.GetAllGroups(ctx)
@@ -73,11 +74,10 @@ func (s *Service) GetAllGroups(ctx context.Context, req *pb.GetAllGroupsReq) (re
 		groups, err = s.dao.GetAllGroupsByUserId(ctx, req.Uid)
 	}
 	if err != nil {
-		return nil, ecode.Errorf(ecode.ServerErr, "error when get group info by id %s", err.Error())
+		return resp, ecode.Errorf(ecode.ServerErr, "error when get group info by id %s", err.Error())
 	}
-	resp = new(pb.AllGroups)
 	if len(groups) == 0 {
-		return nil, ecode.NothingFound
+		return resp, nil
 	}
 	for _, g := range groups {
 		basicInfo := new(pb.GroupBasicInfo)
@@ -93,7 +93,7 @@ func (s *Service) AddMember(ctx context.Context, req *pb.AddMemberReq) (*empty.E
 	resp := new(empty.Empty)
 	err := s.dao.AddMember(ctx, req.Uid, req.Gid)
 	if err != nil {
-		return nil, ecode.Errorf(ecode.ServerErr, err.Error())
+		return resp, ecode.Errorf(ecode.ServerErr, err.Error())
 	}
 	return resp, nil
 }
