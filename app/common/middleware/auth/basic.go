@@ -6,7 +6,6 @@ package auth
 
 import (
 	"encoding/base64"
-	"fmt"
 	"github.com/bilibili/kratos/pkg/ecode"
 	bm "github.com/bilibili/kratos/pkg/net/http/blademaster"
 	"strings"
@@ -16,44 +15,34 @@ func BasicFilter(ctx *bm.Context) {
 	basicHeader := ctx.Request.Header.Get("Authorization")
 	email, password, err := ParseBasicHeader(basicHeader)
 	if err != nil {
-		ctx.JSON(nil, ecode.Unauthorized)
+		ctx.JSON(nil, err)
+		ctx.Abort()
+		return
 	}
 	ctx.Set("email", email)
 	ctx.Set("password", password)
 }
 
-type basicAuthError struct {
-	internalError error
-}
-
-func newBasicAuthError(e error) basicAuthError {
-	return basicAuthError{internalError: e}
-}
-
-func (e basicAuthError) Error() string {
-	return fmt.Sprintf("basic auth failed with error %s", e.internalError.Error())
-}
-
 func ParseBasicHeader(header string) (email, password string, err error) {
 	if header == "" {
-		err = newBasicAuthError(fmt.Errorf("wrong basic header: %s", header))
+		err = ecode.Errorf(ecode.Unauthorized, " no basic auth header in request headers")
 		return
 	}
 	s := strings.SplitN(header, " ", 2)
 	if len(s) != 2 {
-		err = newBasicAuthError(fmt.Errorf("wrong basic header format: %s", header))
+		err = ecode.Errorf(ecode.Unauthorized, "the format of basic auth header is wrong")
 		return
 	}
 
 	b, err := base64.StdEncoding.DecodeString(s[1])
 	if err != nil {
-		err = newBasicAuthError(fmt.Errorf("failed parse based64 code: %s", header))
+		err = ecode.Errorf(ecode.Unauthorized, "the format of basic auth header is wrong")
 		return
 	}
 
 	pair := strings.SplitN(string(b), ":", 2)
 	if len(pair) != 2 || pair[0] == "" || pair[1] == "" {
-		err = newBasicAuthError(fmt.Errorf("wrong encoded infomation: %s", header))
+		err = ecode.Errorf(ecode.Unauthorized, "the content of basic auth header is wrong")
 		return
 	}
 	email = pair[0]

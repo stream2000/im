@@ -9,7 +9,6 @@ import (
 	"github.com/bilibili/kratos/pkg/ecode"
 	"github.com/golang/protobuf/ptypes/empty"
 	"github.com/google/wire"
-	"github.com/pkg/errors"
 )
 
 var Provider = wire.NewSet(New, wire.Bind(new(pb.GroupServer), new(*Service)))
@@ -24,7 +23,7 @@ func (s *Service) GetAllGroupsLikeName(ctx context.Context, req *pb.GroupsInfoBy
 	allGroups = new(pb.AllGroups)
 	groups, err := s.dao.GetAllGroupsByName(ctx, req.Name)
 	if err != nil {
-		return allGroups, ecode.Error(ecode.ServerErr, "error getting groups by name")
+		return allGroups, err
 	}
 	if groups == nil {
 		return allGroups, nil
@@ -42,10 +41,7 @@ func (s *Service) GetAllGroupsLikeName(ctx context.Context, req *pb.GroupsInfoBy
 func (s *Service) CreateGroup(ctx context.Context, req *pb.CreateGroupReq) (*pb.GroupInfo, error) {
 	info := new(pb.GroupInfo)
 	info, err := s.dao.CreateGroup(ctx, req)
-	if err != nil {
-		return info, errors.Wrap(ecode.ServerErr, "dao error")
-	}
-	return info, nil
+	return info, err
 }
 
 func (s *Service) GetGroupInfo(ctx context.Context, req *pb.GroupInfoByIdReq) (resp *pb.GroupInfo, err error) {

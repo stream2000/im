@@ -24,7 +24,7 @@ type Dao interface {
 	Close()
 	Ping(ctx context.Context) (err error)
 	Register(ctx context.Context, email, password string) (uid int64, err error)
-	// bts: -nullcache=&model.AuthInfo{Sum:"null"} -check_null_code=$!=nil&&$.Sum=="null"
+	// bts: -nullcache=&model.AuthInfo{Uid:0} -check_null_code=$!=nil&&$.Uid==0
 	AuthInfo(ctx context.Context, email string) (resp *model.AuthInfo, err error)
 }
 

@@ -13,7 +13,6 @@ import (
 )
 
 const (
-	// 还是你妈的纯sql爽
 	_getAllGroups         = "select id,name,description from `group`"
 	_getGroupByIdSql      = "select id,description,name  from `group` where id =? "
 	_getMembersOfGroupSQL = `select uid from membership  where gid =?`
@@ -50,9 +49,11 @@ func (d *dao) RawGroup(ctx context.Context, gid int64) (g *model.Group, err erro
 	}
 
 	g = new(model.Group)
-	err = row.Scan(&g.Id, &g.Description, &g.Name)
-	if err != nil {
-		panic(err)
+	if err = row.Scan(&g.Id, &g.Description, &g.Name); err != nil {
+		if err == sql.ErrNoRows {
+			err = nil
+			return
+		}
 	}
 
 	var rows *sql.Rows
@@ -70,8 +71,6 @@ func (d *dao) RawGroup(ctx context.Context, gid int64) (g *model.Group, err erro
 		g.Members = append(g.Members, uid)
 	}
 	return
-
-	return
 }
 
 func (d *dao) GetAllGroupsByUserId(ctx context.Context, uid int64) (groups []*model.Group, err error) {
@@ -80,6 +79,7 @@ func (d *dao) GetAllGroupsByUserId(ctx context.Context, uid int64) (groups []*mo
 		log.Error("Match:d.db.Query error(%v)", err)
 		return
 	}
+	defer rows.Close()
 	for rows.Next() {
 		g := new(model.Group)
 		if err = rows.Scan(&g.Id, &g.Name, &g.Description); err != nil {
@@ -97,7 +97,7 @@ func (d *dao) GetAllGroupsByName(ctx context.Context, name string) (groups []*mo
 		log.Error("Match:d.db.Query error(%v)", err)
 		return
 	}
-
+	defer rows.Close()
 	for rows.Next() {
 		g := new(model.Group)
 		if err = rows.Scan(&g.Id, &g.Name, &g.Description); err != nil {
@@ -115,6 +115,7 @@ func (d *dao) GetAllGroups(ctx context.Context) (groups []*model.Group, err erro
 		log.Error("Match:d.db.Query error(%v)", err)
 		return
 	}
+	defer rows.Close()
 	for rows.Next() {
 		g := new(model.Group)
 		if err = rows.Scan(&g.Id, &g.Name, &g.Description); err != nil {
@@ -140,9 +141,10 @@ func (d *dao) CreateGroup(ctx context.Context, req *pb.CreateGroupReq) (info *pb
 	info.Description = req.Description
 	lastInsertedId, err := res.LastInsertId()
 	if err != nil {
-		return nil, ecode.Error(ecode.ServerErr, "fatal error when get auto increment id")
+		return nil, ecode.Error(10000, "fatal error when get auto increment id")
 	}
 	info.Gid = lastInsertedId
+
 	// delete the possible empty cache
 	_ = d.DeleteGroupCache(ctx, info.Gid)
 	var members []int64
@@ -152,27 +154,24 @@ func (d *dao) CreateGroup(ctx context.Context, req *pb.CreateGroupReq) (info *pb
 
 	_, err = d.db.Exec(ctx, _insertMemberSql, req.Uid, lastInsertedId)
 	if err != nil {
-		// TODO add information
 		return
 	}
 	return
 }
 
+// example for error handling
 func (d *dao) AddMember(ctx context.Context, uid int64, gid int64) error {
 	_, err := d.db.Exec(ctx, _insertMemberSql, uid, gid)
 	if err != nil {
 		switch nErr := errors.Cause(err).(type) {
 		case *mysql.MySQLError:
 			if nErr.Number == _mysqlErrCodeForeignConstraint {
-				return pb.GroupToAddNotExist
+				return ecode.Errorf(pb.GroupToAddNotExist, "group with id %d doesn't exist", gid)
 			}
 			if nErr.Number == _mysqlErrCodeDuplicateKeyEntry {
-				return pb.UserAlreadyInGroup
+				return ecode.Errorf(pb.UserAlreadyInGroup, "user with id %d already exists in group %d", uid, gid)
 			}
-		default:
-			log.Info("%+v", nErr)
 		}
-
 		return err
 	}
 	return nil

@@ -34,7 +34,7 @@ func (s *Service) GetAllGroupsByUid(ctx context.Context, req *empty.Empty) (*pb.
 		return nil, ecode.Errorf(ecode.ServerErr, "error getting all groups")
 	}
 	if len(groups.Groups) == 0 {
-		return nil, ecode.Errorf(ecode.NothingFound, "can't find any group")
+		return nil, ecode.NothingFound
 	}
 	resp := new(pb.AllGroups)
 	for _, g := range groups.Groups {
@@ -131,19 +131,9 @@ func (s *Service) AddMember(ctx context.Context, req *pb.AddMemberReq) (*empty.E
 	uid, ok := ctx.(*bm.Context).Get("uid")
 	resp := new(empty.Empty)
 	if !ok {
-		return nil, ecode.ServerErr
+		return nil, ecode.Error(ecode.ServerErr, "未知内部错误")
 	}
 	err := s.dao.AddNewMemberToGroup(ctx, uid.(int64), req.Gid)
-	if err != nil {
-		bcode := ecode.Cause(err).(*ecode.Status)
-		log.Info("bcode : %+v", bcode)
-		if bcode.Code() == grp.UserAlreadyInGroup.Code() || bcode.Code() == grp.GroupToAddNotExist.Code() {
-			log.Info("Get right error code %d", bcode.Code())
-			return resp, err
-		} else {
-			return resp, ecode.ServerErr
-		}
-	}
 	return resp, err
 }
 

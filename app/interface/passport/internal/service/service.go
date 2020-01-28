@@ -63,8 +63,12 @@ func (s *Service) Login(ctx context.Context, req *google_protobuf1.Empty) (resp 
 		return
 	}
 
+	if authInfo == nil {
+		return nil, ecode.Errorf(ecode.Unauthorized, "user with email %s doesn't exist", email)
+	}
+
 	if computedSum != authInfo.Sum {
-		return nil, ecode.Unauthorized
+		return nil, ecode.Errorf(ecode.Unauthorized, "wrong account or password")
 	}
 	resp = &pb.LoginResp{}
 	resp.Uid = authInfo.Uid

@@ -18,7 +18,6 @@ import (
 	bm "github.com/bilibili/kratos/pkg/net/http/blademaster"
 	"github.com/bilibili/kratos/pkg/net/http/blademaster/binding"
 )
-import google_protobuf1 "github.com/golang/protobuf/ptypes/empty"
 
 // to suppressed 'imported but not used warning'
 var _ *bm.Context
@@ -29,14 +28,13 @@ var PathAccountGetBasicInfo = "/account/basicInfo"
 
 // AccountBMServer is the server API for Account service.
 type AccountBMServer interface {
-	// `midware:"auth"`
-	GetBasicInfo(ctx context.Context, req *google_protobuf1.Empty) (resp *BasicInfo, err error)
+	GetBasicInfo(ctx context.Context, req *BasicInfoRequest) (resp *BasicInfo, err error)
 }
 
 var AccountSvc AccountBMServer
 
 func accountGetBasicInfo(c *bm.Context) {
-	p := new(google_protobuf1.Empty)
+	p := new(BasicInfoRequest)
 	if err := c.BindWith(p, binding.Default(c.Request.Method, c.Request.Header.Get("Content-Type"))); err != nil {
 		return
 	}
@@ -46,7 +44,6 @@ func accountGetBasicInfo(c *bm.Context) {
 
 // RegisterAccountBMServer Register the blademaster route
 func RegisterAccountBMServer(e *bm.Engine, server AccountBMServer, midMap map[string]bm.HandlerFunc) {
-	auth := midMap["auth"]
 	AccountSvc = server
-	e.GET("/account/basicInfo", auth, accountGetBasicInfo)
+	e.GET("/account/basicInfo", accountGetBasicInfo)
 }

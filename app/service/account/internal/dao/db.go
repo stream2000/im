@@ -6,7 +6,6 @@ import (
 	"github.com/bilibili/kratos/pkg/ecode"
 	"github.com/bilibili/kratos/pkg/log"
 	xtime "github.com/bilibili/kratos/pkg/time"
-	"github.com/pkg/errors"
 	uuid "github.com/satori/go.uuid"
 	"time"
 
@@ -47,19 +46,13 @@ func (d *dao) RawAccount(ctx context.Context, uid int64) (acc *model.Account, er
 			err = nil
 			acc = nil
 		} else {
-			err = errors.WithStack(err)
+			log.Error("row.Scan error(%v)", err)
 		}
-		log.Error("Unknow error %+v", err)
-		return
 	}
 	return
 }
 
 func (d *dao) AddAccount(ctx context.Context, req *pb.RegisterReq) (resp *pb.RegisterResp, err error) {
-	// if the key is cached, the account will get a empty response
-	resp = new(pb.RegisterResp)
-
-	// use transaction to ensure we get a right auto increment id
 	tx, err := d.db.Begin(ctx)
 	defer func() {
 		if nil == err {
@@ -74,7 +67,7 @@ func (d *dao) AddAccount(ctx context.Context, req *pb.RegisterReq) (resp *pb.Reg
 		return
 	}
 	if acc != nil {
-		return nil, pb.AccountEmailRepeated
+		return nil, ecode.Errorf(pb.AccountEmailRepeated, "email %s already registered", req.Email)
 	}
 
 	var data []map[string]interface{}
@@ -93,14 +86,17 @@ func (d *dao) AddAccount(ctx context.Context, req *pb.RegisterReq) (resp *pb.Reg
 	log.Infoc(ctx, cond, vals)
 	res, err := d.db.Exec(ctx, cond, vals...)
 	if err != nil {
+		log.Error("account.service.dao.addAccount.Exec(%v) Err(%+v)", cond, err)
 		return
 	}
 
 	lastInsertedId, err := res.LastInsertId()
 	if err != nil {
-		log.Errorc(ctx, "fatal error when get auto increase id of email %s", req.Email)
-		return nil, ecode.Error(ecode.ServerErr, "fatal error when get auto increment id")
+		log.Error("account.service.dao error getting auto increment id Email(%s) Err(%v)", req.Email, err)
+		return nil, err
 	}
+
+	resp = new(pb.RegisterResp)
 	resp.Uid = lastInsertedId
 	// delete the empty cache item
 	_ = d.DeleteCacheAccount(ctx, resp.Uid)
@@ -112,6 +108,10 @@ func (d *dao) GetAccountByEmail(ctx context.Context, email string) (acc *model.A
 		"email": email,
 	}
 	cond, vals, err := qb.BuildSelect(accountTable, where, []string{"id", "password", "sign", "profile_pic_url", "nickname"})
+	if err != nil {
+		panic(err)
+	}
+
 	row := d.db.QueryRow(ctx, cond, vals[0])
 	acc = &model.Account{}
 	acc.Email = email
@@ -120,9 +120,8 @@ func (d *dao) GetAccountByEmail(ctx context.Context, email string) (acc *model.A
 			err = nil
 			acc = nil
 		} else {
-			err = errors.WithStack(err)
+			log.Error("row.Scan error(%v)", err)
 		}
-		return
 	}
 	return
 }

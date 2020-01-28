@@ -9,7 +9,6 @@ import (
 	acc "chat/app/service/account/api"
 	"context"
 	"github.com/bilibili/kratos/pkg/conf/env"
-	"github.com/bilibili/kratos/pkg/ecode"
 	"github.com/bilibili/kratos/pkg/net/rpc/warden"
 	xtime "github.com/bilibili/kratos/pkg/time"
 	"time"
@@ -36,8 +35,8 @@ func (d *dao) RawBasicInfo(ctx context.Context, uid int64) (info *pb.BasicInfo, 
 		return nil, err
 	}
 
-	if resp == nil || resp.Uid == 0 {
-		return nil, ecode.NothingFound
+	if resp.Uid == 0 {
+		return nil, nil
 	}
 	info = new(pb.BasicInfo)
 	info.Email = resp.Email

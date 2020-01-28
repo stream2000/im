@@ -7,8 +7,8 @@
 		Close()
 		Ping(ctx context.Context) (err error)
 		Register(ctx context.Context, email, password string) (uid int64, err error)
-		// bts: -nullcache=&model.AuthInfo{Sum:"null"} -check_null_code=$!=nil&&$.Sum=="null"
-		AuthInfo(ctx context.Context,email string)(resp *model.AuthInfo,err error)
+		// bts: -nullcache=&model.AuthInfo{Uid:0} -check_null_code=$!=nil&&$.Uid==0
+		AuthInfo(ctx context.Context, email string) (resp *model.AuthInfo, err error)
 	}
 */
 
@@ -30,7 +30,7 @@ func (d *dao) AuthInfo(c context.Context, email string) (res *model.AuthInfo, er
 		err = nil
 	}
 	defer func() {
-		if res != nil && res.Sum == "null" {
+		if res != nil && res.Uid == 0 {
 			res = nil
 		}
 	}()
@@ -45,7 +45,7 @@ func (d *dao) AuthInfo(c context.Context, email string) (res *model.AuthInfo, er
 	}
 	miss := res
 	if miss == nil {
-		miss = &model.AuthInfo{Sum: "null"}
+		miss = &model.AuthInfo{Uid: 0}
 	}
 	if !addCache {
 		return

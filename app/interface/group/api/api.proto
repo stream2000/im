@@ -70,6 +70,7 @@ service Group {
       get: "/group/all"
     };
   };
+  //`midware:"auth"`
   rpc GetAllGroupsByUid (.google.protobuf.Empty) returns (AllGroups){
     option (google.api.http) = {
       get: "/group/all/user"

@@ -5,7 +5,6 @@ import (
 	"chat/app/service/account/internal/dao"
 	"context"
 	"github.com/bilibili/kratos/pkg/conf/paladin"
-	"github.com/bilibili/kratos/pkg/ecode"
 	"github.com/google/wire"
 )
 
@@ -26,12 +25,6 @@ func (s *Service) GetBasicInfo(ctx context.Context, req *pb.BasicInfoReq) (resp 
 		return
 	}
 	if acc == nil {
-		err = nil
-		return
-	}
-
-	if acc.Email == "" || acc.Password == "" {
-		err = ecode.Error(ecode.ServerErr, "存储出错")
 		return
 	}
 	resp.Sign = acc.Sign
@@ -60,9 +53,6 @@ func (s *Service) GetAuthInfo(ctx context.Context, req *pb.AuthReq) (resp *pb.Au
 		return
 	}
 
-	if acc.Email == "" || acc.Password == "" {
-		err = ecode.Error(ecode.ServerErr, "存储出错")
-	}
 	resp.Password = acc.Password
 	resp.Uid = acc.UID
 	return

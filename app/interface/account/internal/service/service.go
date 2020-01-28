@@ -7,8 +7,6 @@ import (
 	"github.com/bilibili/kratos/pkg/conf/paladin"
 	"github.com/bilibili/kratos/pkg/ecode"
 	"github.com/bilibili/kratos/pkg/log"
-	bm "github.com/bilibili/kratos/pkg/net/http/blademaster"
-	"github.com/golang/protobuf/ptypes/empty"
 	"github.com/google/wire"
 )
 
@@ -20,20 +18,15 @@ type Service struct {
 	dao dao.Dao
 }
 
-func (s *Service) GetBasicInfo(ctx context.Context, req *empty.Empty) (*pb.BasicInfo, error) {
-	c := ctx.(*bm.Context)
-	uidValue, ok := c.Get("uid")
-	uid := uidValue.(int64)
-	if !ok {
-		log.Error("can;t load uid after jwt authentication")
-		panic("Auth Error")
-	}
+func (s *Service) GetBasicInfo(ctx context.Context, req *pb.BasicInfoRequest) (*pb.BasicInfo, error) {
+	uid := req.Uid
 	info, err := s.dao.BasicInfo(ctx, uid)
 	if err != nil {
 		return nil, err
 	}
 	if info == nil {
-		return nil, ecode.NothingFound
+		log.Error("account.service error : user info not found")
+		return nil, ecode.Errorf(ecode.NothingFound, "user with uid %d not found", uid)
 	}
 
 	resp := new(pb.BasicInfo)

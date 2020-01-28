@@ -16,6 +16,13 @@ var (
 	JwtTokenExpired = ecode.New(20000)
 )
 
+func init() {
+	cm := map[int]string{
+		JwtTokenExpired.Code(): "the json web token has expired",
+	}
+	ecode.Register(cm)
+}
+
 type BearerConfig struct {
 	JwtSecret      string
 	MaxRefreshTime string
@@ -28,7 +35,7 @@ func BearerAuth(jwtSecret string, maxRefreshTime int) func(*bm.Context) {
 		token := jwtTool.ParseBearerHeader(bearerHeader)
 
 		if token == "" {
-			ctx.JSON(nil, ecode.Unauthorized)
+			ctx.JSON(nil, ecode.Errorf(ecode.Unauthorized, " no bearer auth header in request headers"))
 			ctx.Abort()
 			return
 		}
@@ -40,7 +47,7 @@ func BearerAuth(jwtSecret string, maxRefreshTime int) func(*bm.Context) {
 				ctx.Abort()
 				return
 			default:
-				ctx.JSON(nil, ecode.Unauthorized)
+				ctx.JSON(nil, ecode.Errorf(ecode.Unauthorized, "error parse token"))
 				ctx.Abort()
 				return
 			}

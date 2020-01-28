@@ -47,12 +47,14 @@ func (d *dao) AllGroupsByUserId(ctx context.Context, uid int64) (resp *grp.AllGr
 	groups, err := d.grpClient.GetAllGroups(ctx, &grp.GetAllGroupsReq{
 		Uid: uid,
 	})
+	resp = new(grp.AllGroups)
 	if err != nil {
-		return nil, errors.Wrapf(err, "%d", uid)
+		return resp, errors.Wrapf(err, "%d", uid)
 	}
 	if groups == nil || len(groups.Groups) == 0 {
-		return nil, nil
+		return resp, nil
 	}
+	resp.Groups = groups.Groups
 	return
 }
 

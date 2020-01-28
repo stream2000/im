@@ -31,6 +31,7 @@ type GroupBMServer interface {
 
 	GetAllGroups(ctx context.Context, req *SearchGroupReq) (resp *AllGroups, err error)
 
+	// `midware:"auth"`
 	GetAllGroupsByUid(ctx context.Context, req *google_protobuf1.Empty) (resp *AllGroups, err error)
 
 	// `midware:"auth"`
@@ -91,6 +92,6 @@ func RegisterGroupBMServer(e *bm.Engine, server GroupBMServer, midMap map[string
 	e.POST("/group/create", auth, groupCreateGroup)
 	e.GET("/group/info", groupGetGroupInfo)
 	e.GET("/group/all", groupGetAllGroups)
-	e.GET("/group/all/user", groupGetAllGroupsByUid)
+	e.GET("/group/all/user", auth, groupGetAllGroupsByUid)
 	e.POST("/group/addMember", auth, groupAddMember)
 }

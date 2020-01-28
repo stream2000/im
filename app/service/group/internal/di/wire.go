@@ -5,7 +5,7 @@ package di
 
 import (
 	"chat/app/service/group/internal/dao"
-	"chat/app/service/group/internal/server/grpc"
+	"chat/app/service/group/internal/server"
 	"chat/app/service/group/internal/service"
 
 	"github.com/google/wire"
@@ -13,5 +13,5 @@ import (
 
 //go:generate kratos t wire
 func InitApp() (*App, func(), error) {
-	panic(wire.Build(dao.Provider, service.Provider, grpc.New, NewApp))
+	panic(wire.Build(dao.Provider, service.Provider, server.New, NewApp))
 }

@@ -7,7 +7,7 @@ package di
 
 import (
 	"chat/app/service/group/internal/dao"
-	"chat/app/service/group/internal/server/grpc"
+	server2 "chat/app/service/group/internal/server"
 	"chat/app/service/group/internal/service"
 )
 
@@ -44,7 +44,7 @@ func InitApp() (*App, func(), error) {
 		cleanup()
 		return nil, nil, err
 	}
-	server, err := grpc.New(serviceService)
+	server, err := server2.New(serviceService)
 	if err != nil {
 		cleanup5()
 		cleanup4()
