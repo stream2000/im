@@ -6,6 +6,7 @@ require (
 	github.com/bilibili/kratos v0.3.3-0.20200120034122-9d67573417c9
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	github.com/didi/gendry v1.3.2
+	github.com/go-sql-driver/mysql v1.4.1
 	github.com/gogo/protobuf v1.3.0
 	github.com/golang/protobuf v1.3.2
 	github.com/google/wire v0.4.0

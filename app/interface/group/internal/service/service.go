@@ -7,10 +7,10 @@ import (
 	"context"
 	"github.com/bilibili/kratos/pkg/conf/paladin"
 	"github.com/bilibili/kratos/pkg/ecode"
+	"github.com/bilibili/kratos/pkg/log"
 	bm "github.com/bilibili/kratos/pkg/net/http/blademaster"
 	"github.com/golang/protobuf/ptypes/empty"
 	"github.com/google/wire"
-	"google.golang.org/appengine/log"
 )
 
 var Provider = wire.NewSet(New, wire.Bind(new(pb.GroupServer), new(*Service)))
@@ -62,12 +62,11 @@ func (s *Service) CreateGroup(ctx context.Context, req *pb.CreateGroupReq) (*pb.
 	})
 
 	if err != nil {
-		log.Errorf(ctx, "error %+v creating group", err)
 		return nil, ecode.Error(ecode.ServerErr, "error creating group")
 	}
 	resp := new(pb.GroupInfo)
 	if info.Gid == 0 {
-		log.Errorf(ctx, "error %+v creating group", err)
+		log.Error("error %+v creating group", err)
 		return nil, ecode.Error(ecode.ServerErr, "error creating group: wrong value")
 	}
 	resp.Gid = info.Gid
@@ -136,9 +135,16 @@ func (s *Service) AddMember(ctx context.Context, req *pb.AddMemberReq) (*empty.E
 	}
 	err := s.dao.AddNewMemberToGroup(ctx, uid.(int64), req.Gid)
 	if err != nil {
-		return resp, ecode.Errorf(ecode.ServerErr, "error add member: uid :%d gid %d ", uid.(int64), req.Gid)
+		bcode := ecode.Cause(err).(*ecode.Status)
+		log.Info("bcode : %+v", bcode)
+		if bcode.Code() == grp.UserAlreadyInGroup.Code() || bcode.Code() == grp.GroupToAddNotExist.Code() {
+			log.Info("Get right error code %d", bcode.Code())
+			return resp, err
+		} else {
+			return resp, ecode.ServerErr
+		}
 	}
-	return resp, nil
+	return resp, err
 }
 
 // New new a service and return.

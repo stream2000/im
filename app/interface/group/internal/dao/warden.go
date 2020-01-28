@@ -8,6 +8,7 @@ import (
 	grp "chat/app/service/group/api"
 	"context"
 	"github.com/bilibili/kratos/pkg/conf/env"
+	"github.com/bilibili/kratos/pkg/ecode"
 	"github.com/bilibili/kratos/pkg/net/rpc/warden"
 	xtime "github.com/bilibili/kratos/pkg/time"
 	"github.com/pkg/errors"
@@ -16,7 +17,7 @@ import (
 
 func NewWardenClient() (grp.GroupClient, error) {
 	grpccfg := &warden.ClientConfig{
-		Dial:              xtime.Duration(time.Second * 10),
+		Dial:              xtime.Duration(time.Second * 35),
 		Timeout:           xtime.Duration(time.Millisecond * 250),
 		Subset:            50,
 		KeepAliveInterval: xtime.Duration(time.Second * 60),
@@ -72,6 +73,9 @@ func (d *dao) GerGroupDetailedInfo(ctx context.Context, gid int64) (resp *grp.Gr
 func (d *dao) AddNewGroup(ctx context.Context, req *grp.CreateGroupReq) (resp *grp.GroupInfo, err error) {
 	resp, err = d.grpClient.CreateGroup(ctx, req)
 	if err != nil {
+		if ecode.Cause(err) == grp.GroupToAddNotExist {
+			return
+		}
 		return resp, errors.Wrapf(err, "%+v", req)
 	}
 	return resp, nil
@@ -82,10 +86,7 @@ func (d *dao) AddNewMemberToGroup(ctx context.Context, uid int64, gid int64) err
 		Gid: gid,
 		Uid: uid,
 	})
-	if err != nil {
-		return errors.Wrapf(err, "add member err with uid: %d gid: %d  ", uid, gid)
-	}
-	return nil
+	return err
 }
 
 func (d *dao) SearchGroupByName(ctx context.Context, name string) (groups *grp.AllGroups, err error) {

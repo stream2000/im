@@ -1,9 +1,13 @@
 package main
 
 import (
+	ec "chat/app/common/ecode"
 	"chat/app/service/group/api"
+	"chat/app/service/group/internal/di"
 	"flag"
 	"github.com/bilibili/kratos/pkg/conf/env"
+	"github.com/bilibili/kratos/pkg/conf/paladin"
+	"github.com/bilibili/kratos/pkg/log"
 	"github.com/bilibili/kratos/pkg/naming"
 	"github.com/bilibili/kratos/pkg/naming/discovery"
 	"github.com/bilibili/kratos/pkg/net/rpc/warden"
@@ -12,10 +16,6 @@ import (
 	"os/signal"
 	"syscall"
 	"time"
-
-	"chat/app/service/group/internal/di"
-	"github.com/bilibili/kratos/pkg/conf/paladin"
-	"github.com/bilibili/kratos/pkg/log"
 )
 
 func main() {
@@ -23,7 +23,7 @@ func main() {
 	log.Init(nil) // debug flag: log.dir={path}
 	defer log.Close()
 	log.Info("group start")
-
+	ec.Init()
 	paladin.Init()
 	_, closeFunc, err := di.InitApp()
 	if err != nil {

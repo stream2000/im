@@ -8,6 +8,8 @@ import (
 	"github.com/bilibili/kratos/pkg/database/sql"
 	"github.com/bilibili/kratos/pkg/ecode"
 	"github.com/bilibili/kratos/pkg/log"
+	"github.com/go-sql-driver/mysql"
+	"github.com/pkg/errors"
 )
 
 const (
@@ -19,6 +21,9 @@ const (
 	_getGroupsByNameSql   = "select id,name,description from `group` where name like ?"
 	_createGroupSql       = "INSERT INTO `group` (name, creator_id, description) VALUES (?,?,?)"
 	_insertMemberSql      = "insert into membership values (?,?)"
+
+	_mysqlErrCodeForeignConstraint = 1216
+	_mysqlErrCodeDuplicateKeyEntry = 1062
 )
 
 func NewDB() (db *sql.DB, cf func(), err error) {
@@ -116,6 +121,7 @@ func (d *dao) GetAllGroups(ctx context.Context) (groups []*model.Group, err erro
 			log.Error("Match:row.Scan() error(%v)", err)
 			return
 		}
+
 		groups = append(groups, g)
 	}
 	return
@@ -153,15 +159,20 @@ func (d *dao) CreateGroup(ctx context.Context, req *pb.CreateGroupReq) (info *pb
 }
 
 func (d *dao) AddMember(ctx context.Context, uid int64, gid int64) error {
-	var row *sql.Row
-	row = d.db.QueryRow(ctx, _getGroupByIdSql, gid)
-	if row == nil {
-		// TODO business error
-		return ecode.NothingFound
-	}
 	_, err := d.db.Exec(ctx, _insertMemberSql, uid, gid)
 	if err != nil {
-		// TODO add information
+		switch nErr := errors.Cause(err).(type) {
+		case *mysql.MySQLError:
+			if nErr.Number == _mysqlErrCodeForeignConstraint {
+				return pb.GroupToAddNotExist
+			}
+			if nErr.Number == _mysqlErrCodeDuplicateKeyEntry {
+				return pb.UserAlreadyInGroup
+			}
+		default:
+			log.Info("%+v", nErr)
+		}
+
 		return err
 	}
 	return nil

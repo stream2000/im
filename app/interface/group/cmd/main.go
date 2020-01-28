@@ -1,6 +1,7 @@
 package main
 
 import (
+	ec "chat/app/common/ecode"
 	"flag"
 	"os"
 	"os/signal"
@@ -17,6 +18,7 @@ func main() {
 	log.Init(nil) // debug flag: log.dir={path}
 	defer log.Close()
 	log.Info("group start")
+	ec.Init()
 	paladin.Init()
 	_, closeFunc, err := di.InitApp()
 	if err != nil {

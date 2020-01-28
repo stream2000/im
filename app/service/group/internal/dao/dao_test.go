@@ -52,35 +52,35 @@ func TestAll(t *testing.T) {
 		panic(err)
 	}
 	log.Info("%+v", *info)
-	g, err := d.Group(ctx, 2)
-
-	if err != nil {
-		panic(err)
-	}
-
-	log.Infoc(ctx, "%+v", g)
-
-	err = d.AddMember(ctx, 100, 1)
-
-	if err != nil {
-		panic(err)
-	}
-
-	groups, err := d.GetAllGroupsByUserId(ctx, 1)
-
-	if err != nil {
-		panic(groups)
-	}
-	for _, g := range groups {
-		log.Info("groups : %+v", *g)
-	}
-
-	groups, err = d.GetAllGroupsByName(ctx, "test")
-
-	if err != nil {
-		panic(groups)
-	}
-	for _, g := range groups {
-		log.Info("groups : %+v", *g)
-	}
+	//g, err := d.Group(ctx, 2)
+	//
+	//if err != nil {
+	//	panic(err)
+	//}
+	//
+	//log.Infoc(ctx, "%+v", g)
+	//
+	//err = d.AddMember(ctx, 100, 1)
+	//
+	//if err != nil {
+	//	panic(err)
+	//}
+	//
+	//groups, err := d.GetAllGroupsByUserId(ctx, 1)
+	//
+	//if err != nil {
+	//	panic(groups)
+	//}
+	//for _, g := range groups {
+	//	log.Info("groups : %+v", *g)
+	//}
+	//
+	//groups, err = d.GetAllGroupsByName(ctx, "test")
+	//
+	//if err != nil {
+	//	panic(groups)
+	//}
+	//for _, g := range groups {
+	//	log.Info("groups : %+v", *g)
+	//}
 }

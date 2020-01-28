@@ -7,10 +7,9 @@ import (
 	"context"
 	"github.com/bilibili/kratos/pkg/conf/paladin"
 	"github.com/bilibili/kratos/pkg/ecode"
-	"github.com/pkg/errors"
-
 	"github.com/golang/protobuf/ptypes/empty"
 	"github.com/google/wire"
+	"github.com/pkg/errors"
 )
 
 var Provider = wire.NewSet(New, wire.Bind(new(pb.GroupServer), new(*Service)))
@@ -92,10 +91,7 @@ func (s *Service) GetAllGroups(ctx context.Context, req *pb.GetAllGroupsReq) (re
 func (s *Service) AddMember(ctx context.Context, req *pb.AddMemberReq) (*empty.Empty, error) {
 	resp := new(empty.Empty)
 	err := s.dao.AddMember(ctx, req.Uid, req.Gid)
-	if err != nil {
-		return resp, ecode.Errorf(ecode.ServerErr, err.Error())
-	}
-	return resp, nil
+	return resp, err
 }
 
 // New new a service and return.

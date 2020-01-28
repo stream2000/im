@@ -72,7 +72,7 @@ func main() {
 		switch s {
 		case syscall.SIGQUIT, syscall.SIGTERM, syscall.SIGINT:
 			closeFunc()
-			log.Info("account exit")
+			log.Info("account service exit")
 			if cancel != nil {
 				cancel()
 			}
