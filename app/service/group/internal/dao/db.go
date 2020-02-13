@@ -141,7 +141,7 @@ func (d *dao) CreateGroup(ctx context.Context, req *pb.CreateGroupReq) (info *pb
 	info.Description = req.Description
 	lastInsertedId, err := res.LastInsertId()
 	if err != nil {
-		return nil, ecode.Error(10000, "fatal error when get auto increment id")
+		return nil, errors.Wrap(err, "fatal error when getting auto increment id")
 	}
 	info.Gid = lastInsertedId
 

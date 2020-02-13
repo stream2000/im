@@ -23,11 +23,6 @@ func init() {
 	ecode.Register(cm)
 }
 
-type BearerConfig struct {
-	JwtSecret      string
-	MaxRefreshTime string
-}
-
 func BearerAuth(jwtSecret string, maxRefreshTime int) func(*bm.Context) {
 	jwtTool.Setup(jwtSecret)
 	return func(ctx *bm.Context) {
