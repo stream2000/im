@@ -2,7 +2,6 @@ package http
 
 import (
 	"chat/app/common/middleware/auth"
-	"chat/app/common/tool/jwt"
 	pb "chat/app/interface/push/api"
 	"github.com/bilibili/kratos/pkg/conf/paladin"
 	bm "github.com/bilibili/kratos/pkg/net/http/blademaster"
@@ -26,7 +25,6 @@ func New(s pb.PushServer) (engine *bm.Engine, err error) {
 	if err = paladin.Get("application.toml").UnmarshalTOML(&jwtConfig); err != nil {
 		return
 	}
-	jwt.Setup(jwtConfig.JwtSecret)
 	midMap := map[string]bm.HandlerFunc{
 		"auth": auth.BearerAuth(jwtConfig.JwtSecret, 10),
 	}

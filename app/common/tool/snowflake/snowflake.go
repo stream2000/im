@@ -12,17 +12,17 @@ import (
 )
 
 type Worker struct {
-	mu            sync.Mutex
-	epoch         time.Time
-	lastTime      int64
-	spareLastTime int64
-	workerId      int64
-	step          int64
-	workerMax     int64
-	workerMask    int64
-	stepMask      int64
-	timeShift     uint8
-	workerShift   uint8
+	mu             sync.Mutex
+	epoch          time.Time
+	lastTime       int64
+	backupLastTime int64
+	workerId       int64
+	step           int64
+	workerMax      int64
+	workerMask     int64
+	stepMask       int64
+	timeShift      uint8
+	workerShift    uint8
 }
 
 var (
@@ -68,8 +68,8 @@ func (w *Worker) Generate() (int64, error) {
 			} else {
 				w.workerId += interval
 			}
-			tempLastTime := w.spareLastTime
-			w.spareLastTime = w.lastTime
+			tempLastTime := w.backupLastTime
+			w.backupLastTime = w.lastTime
 			w.lastTime = tempLastTime
 			if w.lastTime > curTimeStamp {
 				return 0, ErrClockBackward
@@ -95,4 +95,10 @@ func (w *Worker) Generate() (int64, error) {
 
 	res := curTimeStamp<<w.timeShift | w.workerId<<w.workerShift | w.step
 	return res, nil
+}
+
+func (w Worker) RedisScoreMapping(snowflakeId int64) int64 {
+	timePart := snowflakeId >> w.timeShift
+	stepPart := (snowflakeId & w.stepMask) >> 1
+	return timePart<<(StepBits-1) | stepPart
 }

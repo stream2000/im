@@ -11,26 +11,42 @@ import (
 	"time"
 )
 
-var JwtSecret string
+var jwtSecret string
 
-func Setup(jwtSecret string) {
-	JwtSecret = jwtSecret
+func Init(secret string) {
+	jwtSecret = secret
 }
 
 type Claims struct {
-	// user id
-	Uid          int64
-	RefreshTimes int
+	Uid        int64
+	DeviceId   string
+	DeviceType int
 	jwt.StandardClaims
 }
 
-func GenerateToken(id int64) (string, error) {
+const (
+	WebClient = iota + 1
+	AppleMobileClient
+	AndroidClient
+	PcClient
+	AppleMacClient
+)
+
+type AuthParams struct {
+	Uid        int64
+	DeviceId   string
+	DeviceType int
+}
+
+func GenerateToken(p AuthParams) (string, error) {
 	nowTime := time.Now()
-	expireTime := nowTime.Add(time.Hour * 4)
+	expireTime := nowTime.Add(time.Hour * 36)
 
 	claims := Claims{
-		id,
-		0,
+		p.Uid,
+		// TODO use real device id
+		uuid.NewV4().String(),
+		p.DeviceType,
 		jwt.StandardClaims{
 			ExpiresAt: expireTime.Unix(),
 			Issuer:    "minus4.cn",
@@ -38,19 +54,14 @@ func GenerateToken(id int64) (string, error) {
 		},
 	}
 	tokenClaims := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-	token, err := tokenClaims.SignedString([]byte(JwtSecret))
+	token, err := tokenClaims.SignedString([]byte(jwtSecret))
 
 	return token, err
 }
 
-func RefreshToken(claims Claims) (string, error) {
-	tokenClaims := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-	token, err := tokenClaims.SignedString(JwtSecret)
-	return token, err
-}
 func ParseToken(token string) (*Claims, error) {
 	tokenClaims, err := jwt.ParseWithClaims(token, &Claims{}, func(token *jwt.Token) (interface{}, error) {
-		return []byte(JwtSecret), nil
+		return []byte(jwtSecret), nil
 	})
 
 	if tokenClaims != nil {

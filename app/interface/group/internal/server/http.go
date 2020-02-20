@@ -2,7 +2,6 @@ package server
 
 import (
 	"chat/app/common/middleware/auth"
-	"chat/app/common/tool/jwt"
 	pb "chat/app/interface/group/api"
 	"github.com/bilibili/kratos/pkg/conf/paladin"
 	bm "github.com/bilibili/kratos/pkg/net/http/blademaster"
@@ -28,7 +27,6 @@ func New(s pb.GroupServer) (engine *bm.Engine, err error) {
 	if err != nil {
 		return
 	}
-	jwt.Setup(jwtSecret)
 	midMap := map[string]bm.HandlerFunc{
 		"auth": auth.BearerAuth(jwtSecret, 10),
 	}

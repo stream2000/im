@@ -1,29 +1,27 @@
-[ServiceConfig]
-    ErrorBuffer = 100
 [PoolConfig]
     [PoolConfig.ChannelPoolConfig]
         ErrorBuffer =  10
         SleepOnErrorInterval =  1000
-        MaxChannelCount =  25
-        MaxAckChannelCount = 5
+        MaxChannelCount =  5
+        MaxAckChannelCount = 25
         AckNoWait = false
         GlobalQosCount  = 5
     [PoolConfig.ConnectionPoolConfig]
         URI =  "amqp://root:root@0.0.0.0:5672/"
-        ConnectionName =  "ImConnection"
+        ConnectionName =  "ConsumerConnection"
         ErrorBuffer  =  10
         SleepOnErrorInterval =  5000
         MaxConnectionCount = 5
         Heartbeat = 5
         ConnectionTimeout =  10
-[PublisherConfig]
-		SleepOnIdleInterval = 1000
-		SleepOnQueueFullInterval = 1000
-		SleepOnErrorInterval = 1000
-		LetterBuffer = 1000
-		MaxOverBuffer = 1000
-		NotificationBuffer = 1000
-[EncryptionConfig]
-		Enabled = false
-[CompressionConfig]
-		Enabled = false
+[ConsumerConfig]
+        QueueName = "im"
+		ConsumerName = "imCore"
+		AutoAck = false
+		Exclusive = false
+		NoWait = false
+		QosCountOverride = 20
+		MessageBuffer = 1000
+		ErrorBuffer = 100
+		SleepOnErrorInterval = 1
+		SleepOnIdleInterval = 0

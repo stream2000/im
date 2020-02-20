@@ -3,7 +3,6 @@ package http
 import (
 	"chat/app/common/middleware/auth"
 	"chat/app/common/tool/basicAuth"
-	"chat/app/common/tool/jwt"
 	pb "chat/app/interface/passport/api"
 	"github.com/bilibili/kratos/pkg/conf/paladin"
 	bm "github.com/bilibili/kratos/pkg/net/http/blademaster"
@@ -34,7 +33,6 @@ func New(s pb.PassportServer) (engine *bm.Engine, err error) {
 		return
 	}
 	basicAuth.Setup(authConf.Salt1, authConf.Salt2)
-	jwt.Setup(authConf.JwtSecret)
 	midMap := map[string]bm.HandlerFunc{
 		"auth":  auth.BearerAuth(authConf.JwtSecret, 10),
 		"basic": auth.BasicFilter,

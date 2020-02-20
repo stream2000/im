@@ -72,7 +72,12 @@ func (s *Service) Login(ctx context.Context, req *google_protobuf1.Empty) (resp 
 	}
 	resp = &pb.LoginResp{}
 	resp.Uid = authInfo.Uid
-	resp.Token, _ = jwt.GenerateToken(resp.Uid)
+	authParam := jwt.AuthParams{
+		Uid:        resp.Uid,
+		DeviceId:   "default",
+		DeviceType: 1,
+	}
+	resp.Token, _ = jwt.GenerateToken(authParam)
 	return
 }
 

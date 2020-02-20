@@ -32,6 +32,11 @@ message LoginResp {
   string profilePicUrl = 5 [(gogoproto.moretags) = 'json:"profile_pic_url"'];
 }
 
+message ChatAuthReq {
+  string email = 1 [(gogoproto.moretags) = 'form:"email" validate:"email,required"'];
+  string password = 2 [(gogoproto.moretags) = 'form:"password" validate:"required"'];
+}
+
 service Passport{
   rpc Register(RegisterReq) returns (RegisterResp){
   option (google.api.http) = {
